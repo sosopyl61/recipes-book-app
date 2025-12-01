@@ -6,6 +6,7 @@ import com.rymtsou.recipes_book.entity.User;
 import com.rymtsou.recipes_book.repository.RecipeRepository;
 import com.rymtsou.recipes_book.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,10 +14,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RecipeRepository recipeRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RecipeRepository recipeRepository) {
+    public UserService(UserRepository userRepository,
+                       RecipeRepository recipeRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.recipeRepository = recipeRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public void registerUser(UserRegistrationDto userDto) {
@@ -31,7 +36,8 @@ public class UserService {
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
 
-        user.setPassword(userDto.getPassword());
+        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+        user.setPassword(encodedPassword);
 
         userRepository.save(user);
     }
