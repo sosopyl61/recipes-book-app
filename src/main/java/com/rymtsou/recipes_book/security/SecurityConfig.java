@@ -1,7 +1,5 @@
-package com.rymtsou.recipes_book.config;
+package com.rymtsou.recipes_book.security;
 
-import com.rymtsou.recipes_book.security.JwtAuthenticationFilter;
-import com.rymtsou.recipes_book.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

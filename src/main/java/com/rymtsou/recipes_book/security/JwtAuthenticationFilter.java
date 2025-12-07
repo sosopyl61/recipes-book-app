@@ -1,5 +1,6 @@
 package com.rymtsou.recipes_book.security;
 
+import com.rymtsou.recipes_book.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

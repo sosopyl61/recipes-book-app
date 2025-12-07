@@ -1,51 +1,46 @@
 package com.rymtsou.recipes_book.controller;
 
-import com.rymtsou.recipes_book.dto.AuthRequestDto;
-import com.rymtsou.recipes_book.dto.UserRegistrationDto;
-import com.rymtsou.recipes_book.dto.response.AuthResponseDto;
-import com.rymtsou.recipes_book.security.JwtUtil;
-import com.rymtsou.recipes_book.service.UserService;
+import com.rymtsou.recipes_book.model.request.LoginRequestDto;
+import com.rymtsou.recipes_book.model.request.RegistrationRequestDto;
+import com.rymtsou.recipes_book.model.response.LoginResponseDto;
+import com.rymtsou.recipes_book.model.response.RegistrationResponseDto;
+import com.rymtsou.recipes_book.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final SecurityService securityService;
 
     @Autowired
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
-        this.userService = userService;
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
+    public AuthController(SecurityService securityService) {
+        this.securityService = securityService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserRegistrationDto userDto) {
-        try {
-            userService.registerUser(userDto);
-            return ResponseEntity.ok("User registered successfully!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    @PostMapping("/registration")
+    public ResponseEntity<RegistrationResponseDto> registration(@RequestBody RegistrationRequestDto requestDto) {
+        Optional<RegistrationResponseDto> registrationUser = securityService.registration(requestDto);
+        if (registrationUser.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
+        return new ResponseEntity<>(registrationUser.get(), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequestDto request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        return jwtUtil.generateJwtToken(request.getUsername())
-                .map(token -> ResponseEntity.ok(new AuthResponseDto(token)))
-                .orElse(ResponseEntity.internalServerError().build());
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto) {
+        Optional<String> token = securityService.generateToken(requestDto);
+        if (token.isPresent()) {
+            return new ResponseEntity<>(new LoginResponseDto(token.get()), HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }

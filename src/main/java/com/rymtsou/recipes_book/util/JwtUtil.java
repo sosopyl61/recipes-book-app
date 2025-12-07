@@ -1,4 +1,4 @@
-package com.rymtsou.recipes_book.security;
+package com.rymtsou.recipes_book.util;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

@@ -1,12 +1,10 @@
 package com.rymtsou.recipes_book.service;
 
-import com.rymtsou.recipes_book.dto.UserRegistrationDto;
-import com.rymtsou.recipes_book.entity.Recipe;
-import com.rymtsou.recipes_book.entity.User;
+import com.rymtsou.recipes_book.model.entity.Recipe;
+import com.rymtsou.recipes_book.model.entity.User;
 import com.rymtsou.recipes_book.repository.RecipeRepository;
 import com.rymtsou.recipes_book.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,32 +12,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RecipeRepository recipeRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
-                       RecipeRepository recipeRepository,
-                       PasswordEncoder passwordEncoder) {
+                       RecipeRepository recipeRepository) {
         this.userRepository = userRepository;
         this.recipeRepository = recipeRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public void registerUser(UserRegistrationDto userDto) {
-        if (userRepository.existsByUsername(userDto.getUsername())) {
-            throw new RuntimeException("User with this username already exists!");
-        }
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new RuntimeException("User with this email already exists!");
-        }
-
-        User user = new User();
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
-
-        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
-        user.setPassword(encodedPassword);
-
-        userRepository.save(user);
     }
 
     @Transactional
