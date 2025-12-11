@@ -1,6 +1,8 @@
 package com.rymtsou.recipes_book.controller;
 
 import com.rymtsou.recipes_book.model.request.CreateRecipeRequestDto;
+import com.rymtsou.recipes_book.model.request.GetRecipeRequestDto;
+import com.rymtsou.recipes_book.model.request.UpdateRecipeRequestDto;
 import com.rymtsou.recipes_book.model.response.CreateRecipeResponseDto;
 import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
 import com.rymtsou.recipes_book.service.RecipeService;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,12 +32,30 @@ public class RecipeController {
     }
 
     @PostMapping
-    public ResponseEntity<CreateRecipeResponseDto> addRecipe(@RequestBody CreateRecipeRequestDto requestDto) {
-        Optional<CreateRecipeResponseDto> createdRecipe = recipeService.createRecipe(requestDto);
+    public ResponseEntity<GetRecipeResponseDto> addRecipe(@RequestBody CreateRecipeRequestDto requestDto) {
+        Optional<GetRecipeResponseDto> createdRecipe = recipeService.createRecipe(requestDto);
         if (createdRecipe.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
         return new ResponseEntity<>(createdRecipe.get(), HttpStatus.CREATED);
+    }
+
+    @PutMapping
+    public ResponseEntity<GetRecipeResponseDto> updateRecipe(@RequestBody UpdateRecipeRequestDto requestDto) {
+        Optional<GetRecipeResponseDto> updatedRecipe = recipeService.updateRecipe(requestDto);
+        if (updatedRecipe.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(updatedRecipe.get(), HttpStatus.OK);
+    }
+
+    @GetMapping("/find")
+    public ResponseEntity<List<GetRecipeResponseDto>> searchRecipeByTitle(@RequestBody GetRecipeRequestDto requestDto) {
+        List<GetRecipeResponseDto> recipes = recipeService.getRecipeByTitle(requestDto.getTitle());
+        if (recipes.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(recipes, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

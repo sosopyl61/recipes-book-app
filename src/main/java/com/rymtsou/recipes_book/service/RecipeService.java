@@ -2,6 +2,7 @@ package com.rymtsou.recipes_book.service;
 
 import com.rymtsou.recipes_book.model.entity.Security;
 import com.rymtsou.recipes_book.model.request.CreateRecipeRequestDto;
+import com.rymtsou.recipes_book.model.request.UpdateRecipeRequestDto;
 import com.rymtsou.recipes_book.model.response.CreateRecipeResponseDto;
 import com.rymtsou.recipes_book.model.entity.Recipe;
 import com.rymtsou.recipes_book.model.entity.User;
@@ -9,6 +10,8 @@ import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
 import com.rymtsou.recipes_book.repository.RecipeRepository;
 import com.rymtsou.recipes_book.repository.UserRepository;
 import com.rymtsou.recipes_book.util.AuthUtil;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +32,7 @@ public class RecipeService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Optional<CreateRecipeResponseDto> createRecipe(CreateRecipeRequestDto requestDto) {
+    public Optional<GetRecipeResponseDto> createRecipe(CreateRecipeRequestDto requestDto) {
         Security security = authUtil.getCurrentSecurity();
         User user = userRepository.findById(security.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + security.getUserId()));
@@ -42,10 +45,40 @@ public class RecipeService {
 
         Recipe createdRecipe = recipeRepository.save(recipe);
 
-        return Optional.of(CreateRecipeResponseDto.builder()
+        return Optional.of(GetRecipeResponseDto.builder()
                 .title(createdRecipe.getTitle())
                 .instructions(createdRecipe.getInstructions())
-                .authorName(createdRecipe.getAuthor().getUsername())
+                .author(createdRecipe.getAuthor().getUsername())
+                .created(createdRecipe.getCreated())
+                .updated(createdRecipe.getUpdated())
+                .build());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Optional<GetRecipeResponseDto> updateRecipe(UpdateRecipeRequestDto requestDto) {
+        if (!authUtil.canAccessRecipe(requestDto.getId())) {
+            throw new AccessDeniedException("You do not have permission to update this recipe.");
+        }
+
+        Optional<Recipe> recipe = recipeRepository.findById(requestDto.getId());
+
+        if (recipe.isEmpty()) {
+            throw new EntityNotFoundException("Recipe not found with id " + requestDto.getId());
+        }
+
+        if (requestDto.getTitle() != null && !requestDto.getTitle().equals(recipe.get().getTitle()))
+            recipe.get().setTitle(requestDto.getTitle());
+        if (requestDto.getInstructions() != null && !requestDto.getInstructions().equals(recipe.get().getInstructions()))
+            recipe.get().setInstructions(requestDto.getInstructions());
+
+        Recipe updatedRecipe = recipeRepository.save(recipe.get());
+
+        return Optional.of(GetRecipeResponseDto.builder()
+                .title(updatedRecipe.getTitle())
+                .instructions(updatedRecipe.getInstructions())
+                .author(updatedRecipe.getAuthor().getUsername())
+                .created(updatedRecipe.getCreated())
+                .updated(updatedRecipe.getUpdated())
                 .build());
     }
 
@@ -58,6 +91,18 @@ public class RecipeService {
                         .created(recipe.getCreated())
                         .updated(recipe.getUpdated())
                         .build());
+    }
+
+    public List<GetRecipeResponseDto> getRecipeByTitle(String title) {
+        return recipeRepository.findByTitleContainingIgnoreCase(title).stream()
+                .map(recipe -> GetRecipeResponseDto.builder()
+                        .title(recipe.getTitle())
+                        .instructions(recipe.getInstructions())
+                        .author(recipe.getAuthor().getUsername())
+                        .created(recipe.getCreated())
+                        .updated(recipe.getUpdated())
+                        .build())
+                .toList();
     }
 
     public List<CreateRecipeResponseDto> getAllRecipes() {

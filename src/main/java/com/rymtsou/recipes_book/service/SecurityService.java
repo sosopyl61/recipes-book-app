@@ -1,5 +1,6 @@
 package com.rymtsou.recipes_book.service;
 
+import com.rymtsou.recipes_book.model.entity.Role;
 import com.rymtsou.recipes_book.model.request.LoginRequestDto;
 import com.rymtsou.recipes_book.model.request.RegistrationRequestDto;
 import com.rymtsou.recipes_book.model.entity.Security;
@@ -11,6 +12,7 @@ import com.rymtsou.recipes_book.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -29,6 +31,7 @@ public class SecurityService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Optional<RegistrationResponseDto> registration(RegistrationRequestDto requestDto) {
         if (securityRepository.existsByLogin(requestDto.getLogin())) {
             return Optional.empty(); //EXCEPTION
@@ -48,6 +51,7 @@ public class SecurityService {
         Security security = Security.builder()
                 .login(requestDto.getLogin())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
+                .role(Role.USER)
                 .userId(registratedUser.getId())
                 .build();
         securityRepository.save(security);
