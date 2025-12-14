@@ -4,6 +4,7 @@ import com.rymtsou.recipes_book.model.entity.Recipe;
 import com.rymtsou.recipes_book.model.entity.Security;
 import com.rymtsou.recipes_book.model.entity.User;
 import com.rymtsou.recipes_book.model.request.UpdateUserRequestDto;
+import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
 import com.rymtsou.recipes_book.model.response.GetUserResponseDto;
 import com.rymtsou.recipes_book.repository.RecipeRepository;
 import com.rymtsou.recipes_book.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -96,5 +98,20 @@ public class UserService {
             userRepository.save(user);
             return true;
         }
+    }
+
+    public List<GetRecipeResponseDto> getFavoriteRecipes() {
+        Security currentSecurity = authUtil.getCurrentSecurity();
+        User user = userRepository.findById(currentSecurity.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + currentSecurity.getUserId()));
+        return user.getFavoriteRecipes().stream()
+                .map(recipe -> GetRecipeResponseDto.builder()
+                        .title(recipe.getTitle())
+                        .instructions(recipe.getInstructions())
+                        .author(recipe.getAuthor().getUsername())
+                        .created(recipe.getCreated())
+                        .updated(recipe.getUpdated())
+                        .build())
+                .toList();
     }
 }

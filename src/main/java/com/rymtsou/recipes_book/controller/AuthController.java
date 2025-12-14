@@ -7,6 +7,7 @@ import com.rymtsou.recipes_book.model.request.RegistrationRequestDto;
 import com.rymtsou.recipes_book.model.response.LoginResponseDto;
 import com.rymtsou.recipes_book.model.response.RegistrationResponseDto;
 import com.rymtsou.recipes_book.service.SecurityService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<RegistrationResponseDto> registration(@RequestBody RegistrationRequestDto requestDto)
+    public ResponseEntity<RegistrationResponseDto> registration(@Valid @RequestBody RegistrationRequestDto requestDto)
             throws LoginExistsException, UsernameExistsException {
         Optional<RegistrationResponseDto> registrationUser = securityService.registration(requestDto);
         if (registrationUser.isEmpty()) {
@@ -39,7 +40,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto requestDto) {
         Optional<String> token = securityService.generateToken(requestDto);
         if (token.isPresent()) {
             return new ResponseEntity<>(new LoginResponseDto(token.get()), HttpStatus.CREATED);

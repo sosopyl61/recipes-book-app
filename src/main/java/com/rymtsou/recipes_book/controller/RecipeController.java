@@ -5,6 +5,7 @@ import com.rymtsou.recipes_book.model.request.GetRecipeRequestDto;
 import com.rymtsou.recipes_book.model.request.UpdateRecipeRequestDto;
 import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
 import com.rymtsou.recipes_book.service.RecipeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class RecipeController {
     }
 
     @PostMapping
-    public ResponseEntity<GetRecipeResponseDto> addRecipe(@RequestBody CreateRecipeRequestDto requestDto) {
+    public ResponseEntity<GetRecipeResponseDto> addRecipe(@Valid @RequestBody CreateRecipeRequestDto requestDto) {
         Optional<GetRecipeResponseDto> createdRecipe = recipeService.createRecipe(requestDto);
         if (createdRecipe.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -41,7 +42,7 @@ public class RecipeController {
     }
 
     @PutMapping
-    public ResponseEntity<GetRecipeResponseDto> updateRecipe(@RequestBody UpdateRecipeRequestDto requestDto) {
+    public ResponseEntity<GetRecipeResponseDto> updateRecipe(@Valid @RequestBody UpdateRecipeRequestDto requestDto) {
         Optional<GetRecipeResponseDto> updatedRecipe = recipeService.updateRecipe(requestDto);
         if (updatedRecipe.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);

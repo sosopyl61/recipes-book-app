@@ -1,5 +1,6 @@
 package com.rymtsou.recipes_book.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -60,6 +61,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> badCredentialsExceptionHandler(BadCredentialsException exception) {
+        return buildErrorResponse(exception, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(value = ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponse> expiredJwtExceptionHandler(ExpiredJwtException exception) {
         return buildErrorResponse(exception, HttpStatus.UNAUTHORIZED);
     }
 
