@@ -47,14 +47,11 @@ public class JwtUtil {
     }
 
     public Boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException ignored) {}
-        return false;
+        Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token);
+        return true;
     }
 
     public Optional<String> getUsernameFromToken(String username) {
@@ -66,7 +63,8 @@ public class JwtUtil {
                     .getBody()
                     .getSubject();
             return Optional.of(login);
-        } catch (JwtException ignored) {}
+        } catch (JwtException ignored) {
+        }
         return Optional.empty();
     }
 }

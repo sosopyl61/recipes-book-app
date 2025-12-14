@@ -3,12 +3,12 @@ package com.rymtsou.recipes_book.controller;
 import com.rymtsou.recipes_book.model.request.CreateRecipeRequestDto;
 import com.rymtsou.recipes_book.model.request.GetRecipeRequestDto;
 import com.rymtsou.recipes_book.model.request.UpdateRecipeRequestDto;
-import com.rymtsou.recipes_book.model.response.CreateRecipeResponseDto;
 import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
 import com.rymtsou.recipes_book.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +49,15 @@ public class RecipeController {
         return new ResponseEntity<>(updatedRecipe.get(), HttpStatus.OK);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteRecipe(@PathVariable Long id) {
+        Boolean result = recipeService.deleteRecipe(id);
+        if (!result) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping("/find")
     public ResponseEntity<List<GetRecipeResponseDto>> searchRecipeByTitle(@RequestBody GetRecipeRequestDto requestDto) {
         List<GetRecipeResponseDto> recipes = recipeService.getRecipeByTitle(requestDto.getTitle());
@@ -68,7 +77,11 @@ public class RecipeController {
     }
 
     @GetMapping
-    public List<CreateRecipeResponseDto> getAll() {
-        return recipeService.getAllRecipes();
+    public ResponseEntity<List<GetRecipeResponseDto>> getAll() {
+        List<GetRecipeResponseDto> recipes = recipeService.getAllRecipes();
+        if (recipes.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(recipes, HttpStatus.OK);
     }
 }

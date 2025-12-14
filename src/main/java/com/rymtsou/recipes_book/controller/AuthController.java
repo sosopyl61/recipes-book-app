@@ -1,5 +1,7 @@
 package com.rymtsou.recipes_book.controller;
 
+import com.rymtsou.recipes_book.exception.LoginExistsException;
+import com.rymtsou.recipes_book.exception.UsernameExistsException;
 import com.rymtsou.recipes_book.model.request.LoginRequestDto;
 import com.rymtsou.recipes_book.model.request.RegistrationRequestDto;
 import com.rymtsou.recipes_book.model.response.LoginResponseDto;
@@ -27,7 +29,8 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<RegistrationResponseDto> registration(@RequestBody RegistrationRequestDto requestDto) {
+    public ResponseEntity<RegistrationResponseDto> registration(@RequestBody RegistrationRequestDto requestDto)
+            throws LoginExistsException, UsernameExistsException {
         Optional<RegistrationResponseDto> registrationUser = securityService.registration(requestDto);
         if (registrationUser.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);

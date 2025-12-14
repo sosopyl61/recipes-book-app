@@ -1,5 +1,7 @@
 package com.rymtsou.recipes_book.service;
 
+import com.rymtsou.recipes_book.exception.LoginExistsException;
+import com.rymtsou.recipes_book.exception.UsernameExistsException;
 import com.rymtsou.recipes_book.model.entity.Role;
 import com.rymtsou.recipes_book.model.request.LoginRequestDto;
 import com.rymtsou.recipes_book.model.request.RegistrationRequestDto;
@@ -32,13 +34,14 @@ public class SecurityService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Optional<RegistrationResponseDto> registration(RegistrationRequestDto requestDto) {
+    public Optional<RegistrationResponseDto> registration(RegistrationRequestDto requestDto)
+            throws LoginExistsException, UsernameExistsException {
         if (securityRepository.existsByLogin(requestDto.getLogin())) {
-            return Optional.empty(); //EXCEPTION
+            throw new LoginExistsException(requestDto.getLogin());
         }
 
         if (userRepository.existsByUsername(requestDto.getUsername())) {
-            return Optional.empty(); //EXCEPTION
+            throw new UsernameExistsException(requestDto.getUsername());
         }
 
         User user = User.builder()

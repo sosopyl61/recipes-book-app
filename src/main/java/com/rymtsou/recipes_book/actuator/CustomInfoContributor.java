@@ -16,7 +16,6 @@ public class CustomInfoContributor implements InfoContributor {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm::ss.SSS")
     private final ZonedDateTime startupTime = ZonedDateTime.now(ZoneId.of(ZoneId.systemDefault().getId()));
 
-
     @Override
     public void contribute(Info.Builder builder) {
         builder.withDetail("startupTime", startupTime.toString());

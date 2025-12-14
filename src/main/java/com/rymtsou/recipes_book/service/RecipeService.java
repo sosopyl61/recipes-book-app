@@ -3,7 +3,6 @@ package com.rymtsou.recipes_book.service;
 import com.rymtsou.recipes_book.model.entity.Security;
 import com.rymtsou.recipes_book.model.request.CreateRecipeRequestDto;
 import com.rymtsou.recipes_book.model.request.UpdateRecipeRequestDto;
-import com.rymtsou.recipes_book.model.response.CreateRecipeResponseDto;
 import com.rymtsou.recipes_book.model.entity.Recipe;
 import com.rymtsou.recipes_book.model.entity.User;
 import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
@@ -82,6 +81,15 @@ public class RecipeService {
                 .build());
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteRecipe(Long recipeId) {
+        if (authUtil.canAccessRecipe(recipeId)) {
+            recipeRepository.deleteById(recipeId);
+            return !recipeRepository.existsById(recipeId);
+        }
+        throw new AccessDeniedException("You do not have permission to delete this recipe.");
+    }
+
     public Optional<GetRecipeResponseDto> getRecipeById(Long id) {
         return recipeRepository.findById(id)
                 .map(recipe -> GetRecipeResponseDto.builder()
@@ -105,13 +113,15 @@ public class RecipeService {
                 .toList();
     }
 
-    public List<CreateRecipeResponseDto> getAllRecipes() {
+    public List<GetRecipeResponseDto> getAllRecipes() {
         return recipeRepository.findAll().stream()
-                .map(recipe -> new CreateRecipeResponseDto(
-                        recipe.getTitle(),
-                        recipe.getInstructions(),
-                        recipe.getAuthor().getUsername()
-                ))
-                .toList();
+                .map(recipe -> GetRecipeResponseDto.builder()
+                        .title(recipe.getTitle())
+                        .instructions(recipe.getInstructions())
+                        .author(recipe.getAuthor().getUsername())
+                        .created(recipe.getCreated())
+                        .updated(recipe.getUpdated())
+                        .build()
+                ).toList();
     }
 }

@@ -9,9 +9,9 @@ import com.rymtsou.recipes_book.repository.RecipeRepository;
 import com.rymtsou.recipes_book.repository.UserRepository;
 import com.rymtsou.recipes_book.util.AuthUtil;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ public class UserService {
     }
 
     public Optional<GetUserResponseDto> getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findByUsernameContainingIgnoreCase(username)
                 .map(user -> GetUserResponseDto.builder()
                         .username(user.getUsername())
                         .email(user.getEmail())
@@ -43,7 +43,7 @@ public class UserService {
                         .build());
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Optional<GetUserResponseDto> updateUser(UpdateUserRequestDto requestDto) {
         if (!authUtil.canAccessUser(requestDto.getId())) {
             throw new AccessDeniedException("You do not have permission to update this user.");
@@ -68,6 +68,7 @@ public class UserService {
                 .build());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteUser(Long userId) {
         if (authUtil.canAccessUser(userId)) {
             userRepository.deleteById(userId);
@@ -76,7 +77,7 @@ public class UserService {
         throw new AccessDeniedException("You do not have permission to delete this user.");
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Boolean addRecipeToFavorites(Long recipeId) {
         Security currentSecurity = authUtil.getCurrentSecurity();
 
