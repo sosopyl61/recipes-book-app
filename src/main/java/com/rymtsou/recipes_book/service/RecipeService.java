@@ -10,11 +10,12 @@ import com.rymtsou.recipes_book.repository.RecipeRepository;
 import com.rymtsou.recipes_book.repository.UserRepository;
 import com.rymtsou.recipes_book.util.AuthUtil;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -101,27 +102,25 @@ public class RecipeService {
                         .build());
     }
 
-    public List<GetRecipeResponseDto> getRecipeByTitle(String title) {
-        return recipeRepository.findByTitleContainingIgnoreCase(title).stream()
-                .map(recipe -> GetRecipeResponseDto.builder()
+    public Page<GetRecipeResponseDto> getRecipeByTitle(String title, Pageable pageable) {
+        Page<Recipe> recipes = recipeRepository.findByTitleContainingIgnoreCase(title, pageable);
+        return recipes.map(recipe -> GetRecipeResponseDto.builder()
                         .title(recipe.getTitle())
                         .instructions(recipe.getInstructions())
                         .author(recipe.getAuthor().getUsername())
                         .created(recipe.getCreated())
                         .updated(recipe.getUpdated())
-                        .build())
-                .toList();
+                        .build());
     }
 
-    public List<GetRecipeResponseDto> getAllRecipes() {
-        return recipeRepository.findAll().stream()
-                .map(recipe -> GetRecipeResponseDto.builder()
+    public Page<GetRecipeResponseDto> getAllRecipes(Pageable pageable) {
+        Page<Recipe> recipes = recipeRepository.findAll(pageable);
+        return recipes.map(recipe -> GetRecipeResponseDto.builder()
                         .title(recipe.getTitle())
                         .instructions(recipe.getInstructions())
                         .author(recipe.getAuthor().getUsername())
                         .created(recipe.getCreated())
                         .updated(recipe.getUpdated())
-                        .build()
-                ).toList();
+                        .build());
     }
 }

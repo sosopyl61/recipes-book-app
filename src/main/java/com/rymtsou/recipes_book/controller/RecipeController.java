@@ -1,12 +1,15 @@
 package com.rymtsou.recipes_book.controller;
 
 import com.rymtsou.recipes_book.model.request.CreateRecipeRequestDto;
-import com.rymtsou.recipes_book.model.request.GetRecipeRequestDto;
 import com.rymtsou.recipes_book.model.request.UpdateRecipeRequestDto;
 import com.rymtsou.recipes_book.model.response.GetRecipeResponseDto;
 import com.rymtsou.recipes_book.service.RecipeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,9 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -60,8 +63,11 @@ public class RecipeController {
     }
 
     @GetMapping("/find")
-    public ResponseEntity<List<GetRecipeResponseDto>> searchRecipeByTitle(@RequestBody GetRecipeRequestDto requestDto) {
-        List<GetRecipeResponseDto> recipes = recipeService.getRecipeByTitle(requestDto.getTitle());
+    public ResponseEntity<Page<GetRecipeResponseDto>> searchRecipeByTitle(
+            @RequestParam String title,
+            @PageableDefault(size = 10, sort = "created") Pageable pageable
+    ) {
+        Page<GetRecipeResponseDto> recipes = recipeService.getRecipeByTitle(title, pageable);
         if (recipes.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -78,8 +84,10 @@ public class RecipeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GetRecipeResponseDto>> getAll() {
-        List<GetRecipeResponseDto> recipes = recipeService.getAllRecipes();
+    public ResponseEntity<Page<GetRecipeResponseDto>> getAll(
+            @PageableDefault(size = 10,sort = "created", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<GetRecipeResponseDto> recipes = recipeService.getAllRecipes(pageable);
         if (recipes.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
